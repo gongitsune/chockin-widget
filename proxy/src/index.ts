@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { createMiddleware } from "hono/factory";
+import { logger } from "hono/logger";
 
 const cache = createMiddleware<{ Bindings: CloudflareBindings }>(async (c, next) => {
   await next();
@@ -18,6 +19,7 @@ const cache = createMiddleware<{ Bindings: CloudflareBindings }>(async (c, next)
 
 const app = new Hono<{ Bindings: CloudflareBindings }>();
 
+app.use("*", logger());
 app.use("/api/*", cache);
 
 app.get("/api/*", async (c) => {
