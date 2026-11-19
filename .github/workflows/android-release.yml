@@ -51,7 +51,7 @@ jobs:
 
       - name: Install the project Android SDK
         run: |
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-37" "build-tools;$BUILD_TOOLS"
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-37.0" "build-tools;$BUILD_TOOLS"
 
       - name: Build the release APK
         working-directory: app
