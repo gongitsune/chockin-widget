@@ -1,0 +1,86 @@
+name: Android release
+
+on:
+  push:
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    outputs:
+      created: ${{ steps.release.outputs['app--release_created'] }}
+      tag: ${{ steps.release.outputs['app--tag_name'] }}
+    steps:
+      - name: Create or update the Android release
+        id: release
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          release-type: simple
+          path: app
+          include-component-in-tag: false
+
+  publish-apk:
+    needs: release-please
+    if: needs.release-please.outputs.created == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      RELEASE_TAG: ${{ needs.release-please.outputs.tag }}
+      BUILD_TOOLS: 36.0.0
+    steps:
+      - name: Check out the released tag and its history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: refs/tags/${{ needs.release-please.outputs.tag }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+
+      - name: Install the project Android SDK
+        run: |
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-37" "build-tools;$BUILD_TOOLS"
+
+      - name: Build the release APK
+        working-directory: app
+        run: bash gradlew :app:assembleRelease -PversionFromTag=true
+
+      - name: Sign and verify the APK
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          output=app/app/build/outputs/apk/release
+          jq -e --arg version "${RELEASE_TAG#v}" \
+            '.elements | length == 1 and .[0].versionName == $version and .[0].versionCode > 0' \
+            "$output/output-metadata.json"
+          umask 077
+          keystore=$(mktemp "$RUNNER_TEMP/chockin-keystore.XXXXXX")
+          trap 'rm -f "$keystore"' EXIT
+          printf '%s' "${KEYSTORE_BASE64:?Missing ANDROID_KEYSTORE_BASE64}" | base64 --decode > "$keystore"
+          signer="$ANDROID_HOME/build-tools/$BUILD_TOOLS/apksigner"
+          apk="$RUNNER_TEMP/chockin-widget-$RELEASE_TAG.apk"
+          "$signer" sign --ks "$keystore" --ks-key-alias "$KEY_ALIAS" \
+            --ks-pass env:STORE_PASSWORD --key-pass env:KEY_PASSWORD \
+            --out "$apk" "$output/app-release-unsigned.apk"
+          "$signer" verify --verbose "$apk"
+
+      - name: Attach the signed APK to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$RELEASE_TAG" "$RUNNER_TEMP/chockin-widget-$RELEASE_TAG.apk" --repo "$GITHUB_REPOSITORY" --clobber

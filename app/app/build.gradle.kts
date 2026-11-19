@@ -1,6 +1,15 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.app.versioning)
+}
+
+appVersioning {
+    enabled.set(providers.gradleProperty("versionFromTag").map(String::toBooleanStrict).orElse(false))
+    releaseBuildOnly.set(true)
+    gitRootDirectory.set(rootDir.parentFile)
+    tagFilter.set("v[0-9]*.[0-9]*.[0-9]*")
+    versionName.set { tag.name.removePrefix("v") }
 }
 
 android {
