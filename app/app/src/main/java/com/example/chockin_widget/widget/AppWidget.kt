@@ -120,10 +120,12 @@ private fun RoomList(data: WidgetData, preview: Boolean = false) {
     val context = LocalContext.current
     Column(
         GlanceModifier.fillMaxSize().appWidgetBackground().cornerRadius(24.dp)
-            .background(colors.widgetBackground).padding(12.dp)
+            .background(colors.widgetBackground)
+            .clickable(actionStartActivity<MainActivity>())
+            .padding(12.dp)
     ) {
         Row(
-            GlanceModifier.fillMaxWidth().clickable(actionStartActivity<MainActivity>()),
+            GlanceModifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
