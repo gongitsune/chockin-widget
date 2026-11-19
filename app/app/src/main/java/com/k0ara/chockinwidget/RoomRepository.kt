@@ -1,4 +1,4 @@
-package com.example.chockin_widget
+package com.k0ara.chockinwidget
 
 import android.content.Context
 import android.content.SharedPreferences

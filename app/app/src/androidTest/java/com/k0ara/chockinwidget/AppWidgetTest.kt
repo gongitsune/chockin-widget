@@ -1,4 +1,4 @@
-package com.example.chockin_widget
+package com.k0ara.chockinwidget
 
 import android.appwidget.AppWidgetHostView
 import android.appwidget.AppWidgetProviderInfo.WIDGET_CATEGORY_HOME_SCREEN
@@ -14,7 +14,7 @@ import androidx.glance.appwidget.compose
 import androidx.glance.appwidget.composeForPreview
 import androidx.test.filters.SdkSuppress
 import androidx.test.platform.app.InstrumentationRegistry
-import com.example.chockin_widget.widget.AppWidget
+import com.k0ara.chockinwidget.widget.AppWidget
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue

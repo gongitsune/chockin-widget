@@ -1,4 +1,4 @@
-package com.example.chockin_widget.ui.theme
+package com.k0ara.chockinwidget.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

@@ -1,4 +1,4 @@
-package com.example.chockin_widget.widget
+package com.k0ara.chockinwidget.widget
 
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProviderInfo.WIDGET_CATEGORY_HOME_SCREEN

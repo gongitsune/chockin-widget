@@ -1,8 +1,7 @@
-package com.example.chockin_widget
+package com.k0ara.chockinwidget
 
+import org.junit.Assert.assertEquals
 import org.junit.Test
-
-import org.junit.Assert.*
 
 /**
  * Example local unit test, which will execute on the development machine (host).

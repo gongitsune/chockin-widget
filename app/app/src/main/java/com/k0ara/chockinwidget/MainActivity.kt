@@ -1,4 +1,4 @@
-package com.example.chockin_widget
+package com.k0ara.chockinwidget
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -46,9 +46,9 @@ import androidx.compose.ui.unit.dp
 import androidx.glance.appwidget.updateAll
 import androidx.lifecycle.lifecycleScope
 import coil.compose.AsyncImage
-import com.example.chockin_widget.ui.theme.ChockinWidgetTheme
-import com.example.chockin_widget.widget.AppWidget
-import com.example.chockin_widget.widget.WidgetLocaleWorker
+import com.k0ara.chockinwidget.ui.theme.ChockinWidgetTheme
+import com.k0ara.chockinwidget.widget.AppWidget
+import com.k0ara.chockinwidget.widget.WidgetLocaleWorker
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {

@@ -1,4 +1,4 @@
-package com.example.chockin_widget.widget
+package com.k0ara.chockinwidget.widget
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -42,12 +42,12 @@ import androidx.glance.text.TextStyle
 import coil.imageLoader
 import coil.request.ImageRequest
 import coil.transform.CircleCropTransformation
-import com.example.chockin_widget.MainActivity
-import com.example.chockin_widget.Member
-import com.example.chockin_widget.R
-import com.example.chockin_widget.Room
-import com.example.chockin_widget.RoomRepository
-import com.example.chockin_widget.RoomState
+import com.k0ara.chockinwidget.MainActivity
+import com.k0ara.chockinwidget.Member
+import com.k0ara.chockinwidget.R
+import com.k0ara.chockinwidget.Room
+import com.k0ara.chockinwidget.RoomRepository
+import com.k0ara.chockinwidget.RoomState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll

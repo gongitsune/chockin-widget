@@ -1,4 +1,4 @@
-package com.example.chockin_widget.widget
+package com.k0ara.chockinwidget.widget
 
 import android.appwidget.AppWidgetManager
 import android.content.Context
@@ -10,7 +10,7 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import com.example.chockin_widget.RoomRepository
+import com.k0ara.chockinwidget.RoomRepository
 
 class AppWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget = AppWidget()

@@ -4,13 +4,13 @@ plugins {
 }
 
 android {
-    namespace = "com.example.chockin_widget"
+    namespace = "com.k0ara.chockinwidget"
     compileSdk {
         version = release(37)
     }
 
     defaultConfig {
-        applicationId = "com.example.chockin_widget"
+        applicationId = "com.k0ara.chockinwidget"
         minSdk = 33
         targetSdk = 37
         versionCode = 1

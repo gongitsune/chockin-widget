@@ -1,10 +1,10 @@
-package com.example.chockin_widget
+package com.k0ara.chockinwidget
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.platform.app.InstrumentationRegistry
-import com.example.chockin_widget.ui.theme.ChockinWidgetTheme
+import com.k0ara.chockinwidget.ui.theme.ChockinWidgetTheme
 import org.junit.Rule
 import org.junit.Test
 
