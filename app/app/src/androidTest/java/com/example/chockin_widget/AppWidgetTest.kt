@@ -1,14 +1,17 @@
 package com.example.chockin_widget
 
 import android.appwidget.AppWidgetHostView
+import android.appwidget.AppWidgetProviderInfo.WIDGET_CATEGORY_HOME_SCREEN
 import android.content.Context
 import android.content.ContextWrapper
+import android.content.res.Configuration
 import android.view.View
 import android.widget.ListView
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.core.view.descendants
 import androidx.glance.appwidget.compose
+import androidx.glance.appwidget.composeForPreview
 import androidx.test.filters.SdkSuppress
 import androidx.test.platform.app.InstrumentationRegistry
 import com.example.chockin_widget.widget.AppWidget
@@ -16,8 +19,29 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.util.Locale
 
 class AppWidgetTest {
+    @Test
+    @SdkSuppress(minSdkVersion = 35)
+    fun previewShowsCountInSelectedLanguage() {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val target = instrumentation.targetContext
+        for ((locale, count) in listOf(Locale.ENGLISH to "2 people", Locale.JAPANESE to "2 人")) {
+            val config = Configuration(target.resources.configuration).apply { setLocale(locale) }
+            val context = target.createConfigurationContext(config)
+            val views =
+                runBlocking { AppWidget().composeForPreview(context, WIDGET_CATEGORY_HOME_SCREEN) }
+            instrumentation.runOnMainSync {
+                val host = AppWidgetHostView(context)
+                val preview = views.apply(context, host)
+                val matches = arrayListOf<View>()
+                preview.findViewsWithText(matches, count, View.FIND_VIEWS_WITH_TEXT)
+                assertTrue("Missing count: $count", matches.isNotEmpty())
+            }
+        }
+    }
+
     @Test
     @SdkSuppress(minSdkVersion = 31)
     fun rendersMemberInLauncherCollection() {

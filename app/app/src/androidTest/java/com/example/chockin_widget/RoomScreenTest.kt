@@ -3,6 +3,7 @@ package com.example.chockin_widget
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.test.platform.app.InstrumentationRegistry
 import com.example.chockin_widget.ui.theme.ChockinWidgetTheme
 import org.junit.Rule
 import org.junit.Test
@@ -26,6 +27,7 @@ class RoomScreenTest {
     @Test fun showsEmptyRoomAfterSuccessfulRefresh() {
         val room = parseRoom("""{"serverTime":"2026-11-19T10:00:00Z","occupied":false,"presentCount":0,"members":[]}""")
         compose.setContent { ChockinWidgetTheme { RoomScreen(RoomState(room), false) {} } }
-        compose.onNodeWithText("現在、部室にいる人はいません").assertIsDisplayed()
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        compose.onNodeWithText(context.getString(R.string.room_empty)).assertIsDisplayed()
     }
 }

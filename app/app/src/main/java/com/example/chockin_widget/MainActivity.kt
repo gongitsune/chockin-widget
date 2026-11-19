@@ -37,7 +37,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.glance.appwidget.updateAll
@@ -45,6 +48,7 @@ import androidx.lifecycle.lifecycleScope
 import coil.compose.AsyncImage
 import com.example.chockin_widget.ui.theme.ChockinWidgetTheme
 import com.example.chockin_widget.widget.AppWidget
+import com.example.chockin_widget.widget.WidgetLocaleWorker
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -53,6 +57,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        WidgetLocaleWorker.enqueue(applicationContext)
         setContent {
             ChockinWidgetTheme {
                 val state by remember { RoomRepository.observe(applicationContext) }.collectAsState(
@@ -87,6 +92,7 @@ internal fun RoomScreen(state: RoomState, refreshing: Boolean, refresh: () -> Un
     val colors = MaterialTheme.colorScheme
     val type = MaterialTheme.typography
     val room = state.room
+    val context = LocalContext.current
     Scaffold { insets ->
         Box(
             Modifier
@@ -102,13 +108,13 @@ internal fun RoomScreen(state: RoomState, refreshing: Boolean, refresh: () -> Un
                 item {
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            "Chockin",
+                            stringResource(R.string.brand_name),
                             Modifier.weight(1f),
                             style = type.titleLarge,
                             fontWeight = FontWeight.Black
                         )
                         FilledTonalButton(onClick = refresh, enabled = !refreshing) {
-                            Text(if (refreshing) "更新中…" else "更新")
+                            Text(stringResource(if (refreshing) R.string.refreshing else R.string.refresh))
                         }
                     }
                     Spacer(Modifier.height(24.dp))
@@ -120,7 +126,7 @@ internal fun RoomScreen(state: RoomState, refreshing: Boolean, refresh: () -> Un
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column(Modifier.weight(1f)) {
-                                Text("部室の在室者", style = type.titleMedium)
+                                Text(stringResource(R.string.room_title), style = type.titleMedium)
                                 Row(verticalAlignment = Alignment.Bottom) {
                                     Text(
                                         room?.members?.size?.toString() ?: "—",
@@ -128,13 +134,16 @@ internal fun RoomScreen(state: RoomState, refreshing: Boolean, refresh: () -> Un
                                         fontWeight = FontWeight.Black
                                     )
                                     Text(
-                                        "人",
+                                        pluralStringResource(
+                                            R.plurals.people_unit,
+                                            room?.members?.size ?: 0
+                                        ),
                                         Modifier.padding(bottom = 8.dp, start = 4.dp),
                                         style = type.titleLarge
                                     )
                                 }
                                 if (room != null) Text(
-                                    "${room.time} 時点",
+                                    stringResource(R.string.as_of, room.formattedTime(context)),
                                     style = type.labelMedium
                                 )
                             }
@@ -148,10 +157,14 @@ internal fun RoomScreen(state: RoomState, refreshing: Boolean, refresh: () -> Un
                         }
                     }
                     Spacer(Modifier.height(28.dp))
-                    Text("在室メンバー", style = type.titleLarge, fontWeight = FontWeight.Bold)
+                    Text(
+                        stringResource(R.string.present_members),
+                        style = type.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
                     Spacer(Modifier.height(12.dp))
                     if (state.failed) Text(
-                        if (room == null) "取得できませんでした。もう一度更新してください。" else "更新できませんでした。前回の情報を表示しています。",
+                        stringResource(if (room == null) R.string.load_failed else R.string.refresh_failed),
                         Modifier.padding(bottom = 12.dp),
                         color = colors.error,
                         style = type.bodyMedium
@@ -162,7 +175,7 @@ internal fun RoomScreen(state: RoomState, refreshing: Boolean, refresh: () -> Un
                             color = colors.surfaceContainer
                         ) {
                             Text(
-                                if (room == null) "読み込み中…" else "現在、部室にいる人はいません",
+                                stringResource(if (room == null) R.string.loading else R.string.room_empty),
                                 Modifier
                                     .fillMaxWidth()
                                     .padding(24.dp), style = type.bodyLarge

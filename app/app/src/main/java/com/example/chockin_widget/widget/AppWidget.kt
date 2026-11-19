@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
@@ -14,6 +15,7 @@ import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
 import androidx.glance.Image
 import androidx.glance.ImageProvider
+import androidx.glance.LocalContext
 import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
@@ -41,6 +43,9 @@ import coil.imageLoader
 import coil.request.ImageRequest
 import coil.transform.CircleCropTransformation
 import com.example.chockin_widget.MainActivity
+import com.example.chockin_widget.Member
+import com.example.chockin_widget.R
+import com.example.chockin_widget.Room
 import com.example.chockin_widget.RoomRepository
 import com.example.chockin_widget.RoomState
 import kotlinx.coroutines.Dispatchers
@@ -85,6 +90,16 @@ private suspend fun widgetData(context: Context, state: RoomState): WidgetData =
 
 class AppWidget : GlanceAppWidget() {
     override val sizeMode = SizeMode.Exact
+    override val previewSizeMode =
+        SizeMode.Responsive(setOf(DpSize(180.dp, 110.dp), DpSize(220.dp, 160.dp)))
+
+    override suspend fun providePreview(context: Context, widgetCategory: Int) {
+        val members = listOf(Member("Linus", null, null), Member("Wozniak", null, null))
+        val data = WidgetData(RoomState(Room(members, java.time.Instant.EPOCH)), emptyMap())
+        provideContent {
+            GlanceTheme { RoomList(data, preview = true) }
+        }
+    }
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val states = RoomRepository.observe(context)
@@ -99,9 +114,10 @@ class AppWidget : GlanceAppWidget() {
 }
 
 @Composable
-private fun RoomList(data: WidgetData) {
+private fun RoomList(data: WidgetData, preview: Boolean = false) {
     val colors = GlanceTheme.colors
     val room = data.state.room
+    val context = LocalContext.current
     Column(
         GlanceModifier.fillMaxSize().appWidgetBackground().cornerRadius(24.dp)
             .background(colors.widgetBackground).padding(12.dp)
@@ -111,14 +127,20 @@ private fun RoomList(data: WidgetData) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                "Chockin", GlanceModifier.defaultWeight(), style = TextStyle(
+                context.getString(R.string.brand_name),
+                GlanceModifier.defaultWeight(),
+                style = TextStyle(
                     color = colors.onSurface,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
             )
             if (room != null) Text(
-                "${room.members.size} 人",
+                context.resources.getQuantityString(
+                    R.plurals.widget_member_count,
+                    room.members.size,
+                    room.members.size
+                ),
                 GlanceModifier.cornerRadius(16.dp).background(colors.primaryContainer)
                     .padding(horizontal = 10.dp, vertical = 4.dp),
                 style = TextStyle(color = colors.onPrimaryContainer, fontWeight = FontWeight.Bold)
@@ -126,58 +148,65 @@ private fun RoomList(data: WidgetData) {
         }
         Spacer(GlanceModifier.height(10.dp))
         if (data.state.failed) Text(
-            if (room == null) "取得できませんでした" else "前回の情報 · ${room.time}",
+            if (room == null) context.getString(R.string.widget_load_failed)
+            else context.getString(R.string.widget_last_known, room.formattedTime(context)),
             style = TextStyle(color = colors.error, fontSize = 12.sp)
         )
         when {
             room == null && !data.state.failed -> Text(
-                "読み込み中…",
+                context.getString(R.string.loading),
                 style = TextStyle(color = colors.onSurface)
             )
 
             room == null -> Unit
             room.members.isEmpty() -> Text(
-                "現在、在室者はいません",
+                context.getString(R.string.widget_empty),
                 style = TextStyle(color = colors.onSurfaceVariant)
             )
 
+            preview -> room.members.forEach { MemberRow(it, null) }
             else -> LazyColumn {
                 items(room.members.size) { i ->
                     val member = room.members[i]
-                    Row(
-                        GlanceModifier.fillMaxWidth().padding(vertical = 2.dp).cornerRadius(14.dp)
-                            .background(colors.surfaceVariant)
-                            .clickable(actionStartActivity<MainActivity>()).padding(6.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        val icon = data.icons[member.avatar]
-                        if (icon != null) Image(
-                            ImageProvider(icon),
-                            null,
-                            GlanceModifier.size(32.dp)
-                        )
-                        else Box(
-                            GlanceModifier.size(32.dp).cornerRadius(16.dp)
-                                .background(colors.secondaryContainer),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                member.name.take(1),
-                                style = TextStyle(color = colors.onSecondaryContainer)
-                            )
-                        }
-                        Spacer(GlanceModifier.width(10.dp))
-                        Text(
-                            member.name,
-                            style = TextStyle(
-                                color = colors.onSurfaceVariant,
-                                fontWeight = FontWeight.Medium
-                            ),
-                            maxLines = 1
-                        )
-                    }
+                    MemberRow(member, data.icons[member.avatar])
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun MemberRow(member: Member, icon: Bitmap?) {
+    val colors = GlanceTheme.colors
+    Row(
+        GlanceModifier.fillMaxWidth().padding(vertical = 2.dp).cornerRadius(14.dp)
+            .background(colors.surfaceVariant)
+            .clickable(actionStartActivity<MainActivity>()).padding(6.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        if (icon != null) Image(
+            ImageProvider(icon),
+            null,
+            GlanceModifier.size(32.dp)
+        )
+        else Box(
+            GlanceModifier.size(32.dp).cornerRadius(16.dp)
+                .background(colors.secondaryContainer),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                member.name.take(1),
+                style = TextStyle(color = colors.onSecondaryContainer)
+            )
+        }
+        Spacer(GlanceModifier.width(10.dp))
+        Text(
+            member.name,
+            style = TextStyle(
+                color = colors.onSurfaceVariant,
+                fontWeight = FontWeight.Medium
+            ),
+            maxLines = 1
+        )
     }
 }

@@ -2,6 +2,7 @@ package com.example.chockin_widget.widget
 
 import android.appwidget.AppWidgetManager
 import android.content.Context
+import android.content.Intent
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.updateAll
 import androidx.work.CoroutineWorker
@@ -13,6 +14,11 @@ import com.example.chockin_widget.RoomRepository
 
 class AppWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget = AppWidget()
+
+    override fun onReceive(context: Context, intent: Intent) {
+        super.onReceive(context, intent)
+        if (intent.action == Intent.ACTION_LOCALE_CHANGED) WidgetLocaleWorker.enqueue(context)
+    }
 
     override fun onUpdate(
         context: Context,

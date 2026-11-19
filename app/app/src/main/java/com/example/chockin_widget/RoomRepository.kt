@@ -2,6 +2,7 @@ package com.example.chockin_widget
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.text.format.DateFormat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
@@ -15,13 +16,22 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
 import java.net.URL
+import java.text.SimpleDateFormat
+import java.time.Instant
 import java.time.OffsetDateTime
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
+import java.util.Date
 import javax.net.ssl.HttpsURLConnection
 
 data class Member(val name: String, val avatar: String?, val status: String?)
-data class Room(val members: List<Member>, val time: String)
+data class Room(val members: List<Member>, val timestamp: Instant) {
+    fun formattedTime(context: Context): String {
+        val locale = context.resources.configuration.locales[0]
+        val skeleton = if (DateFormat.is24HourFormat(context)) "MMMdHm" else "MMMdhm"
+        val pattern = DateFormat.getBestDateTimePattern(locale, skeleton)
+        return SimpleDateFormat(pattern, locale).format(Date.from(timestamp))
+    }
+}
+
 data class RoomState(val room: Room? = null, val failed: Boolean = false)
 
 internal fun parseRoom(json: String): Room {
@@ -33,9 +43,7 @@ internal fun parseRoom(json: String): Room {
             if (item.isNull(key)) null else item.getString(key).takeIf { it.isNotBlank() }
         Member(item.getString("displayName"), optional("avatarUrl"), optional("statusMessage"))
     }
-    val timestamp =
-        OffsetDateTime.parse(obj.getString("serverTime")).atZoneSameInstant(ZoneId.systemDefault())
-    return Room(members, timestamp.format(DateTimeFormatter.ofPattern("M/d HH:mm")))
+    return Room(members, OffsetDateTime.parse(obj.getString("serverTime")).toInstant())
 }
 
 object RoomRepository {

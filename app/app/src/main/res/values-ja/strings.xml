@@ -1,0 +1,22 @@
+<resources>
+    <string name="room_title">部室の在室者</string>
+    <string name="app_widget_description">部室にいるメンバーの名前とアイコンを表示します。</string>
+    <string name="refresh">更新</string>
+    <string name="refreshing">更新中…</string>
+    <string name="as_of">%1$s 時点</string>
+    <string name="present_members">在室メンバー</string>
+    <string name="room_empty">現在、部室にいる人はいません</string>
+    <string name="loading">読み込み中…</string>
+    <string name="load_failed">取得できませんでした。もう一度更新してください。</string>
+    <string name="refresh_failed">更新できませんでした。前回の情報を表示しています。</string>
+    <string name="widget_load_failed">取得できませんでした</string>
+    <string name="widget_last_known">前回の情報 · %1$s</string>
+    <string name="widget_empty">現在、在室者はいません</string>
+
+    <plurals name="people_unit">
+        <item quantity="other">人</item>
+    </plurals>
+    <plurals name="widget_member_count">
+        <item quantity="other">%1$d 人</item>
+    </plurals>
+</resources>
