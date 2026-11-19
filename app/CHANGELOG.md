@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.0.1](https://github.com/gongitsune/chockin-widget/compare/v1.0.0...v1.0.1) (2026-11-19)
+
+
+### Bug Fixes
+
+* **app:** include release workflow fixes in Android releases ([a5aa979](https://github.com/gongitsune/chockin-widget/commit/a5aa979990fcb2b7fc5f9d65dc61f5ef4d1de3a2))
+* **app:** include release workflow fixes in Android releases ([7b30bb4](https://github.com/gongitsune/chockin-widget/commit/7b30bb4cf1a09042d4bc640c3cc0260bae02d3ae))
+* **app:** install the Android 37.0 SDK package for release builds ([b7fc548](https://github.com/gongitsune/chockin-widget/commit/b7fc5484fa49ec9d76b871f2c0821907b6b7db68))
+* **app:** install the Android 37.0 SDK package for release builds ([2e07c78](https://github.com/gongitsune/chockin-widget/commit/2e07c788ff19f4fdf267ccd109981c11c1a4db67))
+
 ## 1.0.0 (2026-11-19)
 
 
