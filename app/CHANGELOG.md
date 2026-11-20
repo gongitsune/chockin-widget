@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0](https://github.com/gongitsune/chockin-widget/compare/v1.0.2...v1.1.0) (2026-11-20)
+
+
+### Features
+
+* **app:** use segmented member lists in the app and widget ([27a429c](https://github.com/gongitsune/chockin-widget/commit/27a429c9d7ada292cb6c364cb4d735d628b3c3e2))
+* **app:** use segmented member lists in the app and widget ([065b09d](https://github.com/gongitsune/chockin-widget/commit/065b09d78be0965a638386fcb83967d031de6f46))
+
 ## [1.0.2](https://github.com/gongitsune/chockin-widget/compare/v1.0.1...v1.0.2) (2026-11-20)
 
 
