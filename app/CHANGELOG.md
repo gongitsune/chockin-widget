@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/gongitsune/chockin-widget/compare/v1.1.0...v1.2.0) (2026-11-20)
+
+
+### Features
+
+* **app:** add Firebase crash and performance monitoring ([f6391e4](https://github.com/gongitsune/chockin-widget/commit/f6391e477e8848e6ee2a240edcf5f68219de45eb))
+
 ## [1.1.0](https://github.com/gongitsune/chockin-widget/compare/v1.0.2...v1.1.0) (2026-11-20)
 
 
