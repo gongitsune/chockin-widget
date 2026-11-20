@@ -2,13 +2,14 @@ package com.k0ara.chockinwidget.widget
 
 import android.content.Context
 import android.graphics.Bitmap
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.glance.ColorFilter
 import androidx.core.graphics.drawable.toBitmap
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
@@ -48,6 +49,7 @@ import com.k0ara.chockinwidget.R
 import com.k0ara.chockinwidget.Room
 import com.k0ara.chockinwidget.RoomRepository
 import com.k0ara.chockinwidget.RoomState
+import com.k0ara.chockinwidget.ui.theme.Typography
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -119,7 +121,8 @@ private fun RoomList(data: WidgetData, preview: Boolean = false) {
     val room = data.state.room
     val context = LocalContext.current
     Column(
-        GlanceModifier.fillMaxSize().appWidgetBackground().cornerRadius(24.dp)
+        GlanceModifier.fillMaxSize().appWidgetBackground()
+            .cornerRadius(android.R.dimen.system_app_widget_background_radius)
             .background(colors.widgetBackground)
             .clickable(actionStartActivity<MainActivity>())
             .padding(12.dp)
@@ -133,8 +136,8 @@ private fun RoomList(data: WidgetData, preview: Boolean = false) {
                 GlanceModifier.defaultWeight(),
                 style = TextStyle(
                     color = colors.onSurface,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
+                    fontSize = Typography.titleLarge.fontSize,
+                    fontWeight = FontWeight.Normal
                 )
             )
             if (room != null) Text(
@@ -143,34 +146,37 @@ private fun RoomList(data: WidgetData, preview: Boolean = false) {
                     room.members.size,
                     room.members.size
                 ),
-                GlanceModifier.cornerRadius(16.dp).background(colors.primaryContainer)
+                GlanceModifier.cornerRadius(100.dp).background(colors.primaryContainer)
                     .padding(horizontal = 10.dp, vertical = 4.dp),
-                style = TextStyle(color = colors.onPrimaryContainer, fontWeight = FontWeight.Bold)
+                style = TextStyle(color = colors.onPrimaryContainer, fontSize = Typography.labelLarge.fontSize,
+                    fontWeight = FontWeight.Medium)
             )
         }
         Spacer(GlanceModifier.height(10.dp))
         if (data.state.failed) Text(
             if (room == null) context.getString(R.string.widget_load_failed)
             else context.getString(R.string.widget_last_known, room.formattedTime(context)),
-            style = TextStyle(color = colors.error, fontSize = 12.sp)
+            style = TextStyle(color = colors.error, fontSize = Typography.bodySmall.fontSize)
         )
         when {
             room == null && !data.state.failed -> Text(
                 context.getString(R.string.loading),
-                style = TextStyle(color = colors.onSurface)
+                style = TextStyle(color = colors.onSurface, fontSize = Typography.bodyMedium.fontSize)
             )
 
             room == null -> Unit
             room.members.isEmpty() -> Text(
                 context.getString(R.string.widget_empty),
-                style = TextStyle(color = colors.onSurfaceVariant)
+                style = TextStyle(color = colors.onSurfaceVariant, fontSize = Typography.bodyMedium.fontSize)
             )
 
-            preview -> room.members.forEach { MemberRow(it, null) }
+            preview -> room.members.forEachIndexed { index, member ->
+                MemberRow(member, null, index, room.members.size)
+            }
             else -> LazyColumn {
                 items(room.members.size) { i ->
                     val member = room.members[i]
-                    MemberRow(member, data.icons[member.avatar])
+                    MemberRow(member, data.icons[member.avatar], i, room.members.size)
                 }
             }
         }
@@ -178,37 +184,46 @@ private fun RoomList(data: WidgetData, preview: Boolean = false) {
 }
 
 @Composable
-private fun MemberRow(member: Member, icon: Bitmap?) {
+private fun MemberRow(member: Member, icon: Bitmap?, index: Int, count: Int) {
     val colors = GlanceTheme.colors
-    Row(
-        GlanceModifier.fillMaxWidth().padding(vertical = 2.dp).cornerRadius(14.dp)
-            .background(colors.surfaceVariant)
-            .clickable(actionStartActivity<MainActivity>()).padding(6.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        if (icon != null) Image(
-            ImageProvider(icon),
-            null,
-            GlanceModifier.size(32.dp)
-        )
-        else Box(
-            GlanceModifier.size(32.dp).cornerRadius(16.dp)
-                .background(colors.secondaryContainer),
-            contentAlignment = Alignment.Center
+    val background = when {
+        count == 1 -> R.drawable.widget_member_single
+        index == 0 -> R.drawable.widget_member_first
+        index == count - 1 -> R.drawable.widget_member_last
+        else -> R.drawable.widget_member_middle
+    }
+    Column(GlanceModifier.fillMaxWidth()) {
+        if (index > 0) Spacer(GlanceModifier.height(ListItemDefaults.SegmentedGap))
+        Row(
+            GlanceModifier.fillMaxWidth()
+                .background(ImageProvider(background), colorFilter = ColorFilter.tint(colors.surface))
+                .clickable(actionStartActivity<MainActivity>())
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
+            if (icon != null) {
+                Image(ImageProvider(icon), null, GlanceModifier.size(32.dp))
+            } else {
+                Box(
+                    GlanceModifier.size(32.dp).cornerRadius(16.dp).background(colors.primaryContainer),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        member.name.take(1),
+                        style = TextStyle(
+                            color = colors.onPrimaryContainer,
+                            fontSize = Typography.titleMedium.fontSize,
+                            fontWeight = FontWeight.Medium
+                        )
+                    )
+                }
+            }
+            Spacer(GlanceModifier.width(16.dp))
             Text(
-                member.name.take(1),
-                style = TextStyle(color = colors.onSecondaryContainer)
+                member.name,
+                style = TextStyle(color = colors.onSurface, fontSize = Typography.bodyLarge.fontSize),
+                maxLines = 1
             )
         }
-        Spacer(GlanceModifier.width(10.dp))
-        Text(
-            member.name,
-            style = TextStyle(
-                color = colors.onSurfaceVariant,
-                fontWeight = FontWeight.Medium
-            ),
-            maxLines = 1
-        )
     }
 }
