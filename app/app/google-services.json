@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "739941748571",
+    "project_id": "chockin-widget",
+    "storage_bucket": "chockin-widget.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:739941748571:android:6d81fbb41e13994cea547e",
+        "android_client_info": {
+          "package_name": "com.k0ara.chockinwidget"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8zSa_UsHJt9JSITTe4Cx0Ff63RjWebdA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
