@@ -1,0 +1,5 @@
+<resources>
+    <!-- Material 3 list container (large) and item (extra-small) shape tokens for RemoteViews. -->
+    <dimen name="widget_list_outer_corner">16dp</dimen>
+    <dimen name="widget_list_inner_corner">4dp</dimen>
+</resources>

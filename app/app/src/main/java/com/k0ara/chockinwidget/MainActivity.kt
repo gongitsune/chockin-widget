@@ -16,12 +16,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -41,7 +42,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.glance.appwidget.updateAll
 import androidx.lifecycle.lifecycleScope
@@ -87,11 +87,13 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 internal fun RoomScreen(state: RoomState, refreshing: Boolean, refresh: () -> Unit) {
     val colors = MaterialTheme.colorScheme
     val type = MaterialTheme.typography
     val room = state.room
+    val members = room?.members.orEmpty()
     val context = LocalContext.current
     Scaffold { insets ->
         Box(
@@ -110,15 +112,14 @@ internal fun RoomScreen(state: RoomState, refreshing: Boolean, refresh: () -> Un
                         Text(
                             stringResource(R.string.brand_name),
                             Modifier.weight(1f),
-                            style = type.titleLarge,
-                            fontWeight = FontWeight.Black
+                            style = type.titleLargeEmphasized
                         )
                         FilledTonalButton(onClick = refresh, enabled = !refreshing) {
                             Text(stringResource(if (refreshing) R.string.refreshing else R.string.refresh))
                         }
                     }
                     Spacer(Modifier.height(24.dp))
-                    Surface(shape = RoundedCornerShape(32.dp), color = colors.primaryContainer) {
+                    Surface(shape = MaterialTheme.shapes.extraLarge, color = colors.primaryContainer) {
                         Row(
                             Modifier
                                 .fillMaxWidth()
@@ -130,8 +131,7 @@ internal fun RoomScreen(state: RoomState, refreshing: Boolean, refresh: () -> Un
                                 Row(verticalAlignment = Alignment.Bottom) {
                                     Text(
                                         room?.members?.size?.toString() ?: "—",
-                                        style = type.displayLarge,
-                                        fontWeight = FontWeight.Black
+                                        style = type.displayLargeEmphasized
                                     )
                                     Text(
                                         pluralStringResource(
@@ -159,8 +159,7 @@ internal fun RoomScreen(state: RoomState, refreshing: Boolean, refresh: () -> Un
                     Spacer(Modifier.height(28.dp))
                     Text(
                         stringResource(R.string.present_members),
-                        style = type.titleLarge,
-                        fontWeight = FontWeight.Bold
+                        style = type.titleLargeEmphasized
                     )
                     Spacer(Modifier.height(12.dp))
                     if (state.failed) Text(
@@ -171,7 +170,7 @@ internal fun RoomScreen(state: RoomState, refreshing: Boolean, refresh: () -> Un
                     )
                     if (room?.members?.isEmpty() == true || (room == null && !state.failed)) {
                         Surface(
-                            shape = RoundedCornerShape(24.dp),
+                            shape = MaterialTheme.shapes.large,
                             color = colors.surfaceContainer
                         ) {
                             Text(
@@ -183,30 +182,20 @@ internal fun RoomScreen(state: RoomState, refreshing: Boolean, refresh: () -> Un
                         }
                     }
                 }
-                itemsIndexed(room?.members.orEmpty()) { index, member ->
-                    val first = if (index == 0) 24.dp else 6.dp
-                    val last = if (index == room!!.members.lastIndex) 24.dp else 6.dp
-                    Surface(
-                        shape = RoundedCornerShape(first, first, last, last),
-                        color = colors.surfaceContainer
-                    ) {
-                        Row(
-                            Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+                itemsIndexed(members) { index, member ->
+                    if (index > 0) Spacer(Modifier.height(ListItemDefaults.SegmentedGap))
+                    SegmentedListItem(
+                        shapes = ListItemDefaults.segmentedShapes(index, members.size),
+                        colors = ListItemDefaults.segmentedColors(containerColor = colors.surfaceContainer),
+                        leadingContent = {
                             Box(
-                                Modifier
-                                    .size(52.dp)
-                                    .clip(CircleShape)
-                                    .background(colors.secondaryContainer),
+                                Modifier.size(40.dp).clip(CircleShape).background(colors.primaryContainer),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     member.name.take(1),
-                                    color = colors.onSecondaryContainer,
-                                    style = type.titleLarge
+                                    color = colors.onPrimaryContainer,
+                                    style = type.titleMedium
                                 )
                                 AsyncImage(
                                     member.avatar,
@@ -215,24 +204,11 @@ internal fun RoomScreen(state: RoomState, refreshing: Boolean, refresh: () -> Un
                                     contentScale = ContentScale.Crop
                                 )
                             }
-                            Spacer(Modifier.width(16.dp))
-                            Column {
-                                Text(
-                                    member.name,
-                                    style = type.titleMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                member.status?.let {
-                                    Text(
-                                        it,
-                                        style = type.bodyMedium,
-                                        color = colors.onSurfaceVariant
-                                    )
-                                }
-                            }
-                        }
+                        },
+                        supportingContent = member.status?.let { { Text(it) } }
+                    ) {
+                        Text(member.name)
                     }
-                    Spacer(Modifier.height(3.dp))
                 }
             }
         }

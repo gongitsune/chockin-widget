@@ -87,10 +87,10 @@
 
     </group>
     <path
-        android:fillColor="#E6E0EA"
-        android:pathData="M26,48h168q14,0 14,14v18q0,14 -14,14h-168q-14,0 -14,-14v-18q0,-14 14,-14z" />
+        android:fillColor="#FDF7FF"
+        android:pathData="M28,48h164q16,0 16,16v28q0,4 -4,4h-188q-4,0 -4,-4v-28q0,-16 16,-16z" />
     <path
-        android:fillColor="#DAD2E8"
+        android:fillColor="#E8DEFF"
         android:pathData="M34,55h0q16,0 16,16v0q0,16 -16,16h-0q-16,0 -16,-16v-0q0,-16 16,-16z" />
     <group
         android:scaleX="1"
@@ -145,10 +145,10 @@
         </group>
     </group>
     <path
-        android:fillColor="#E6E0EA"
-        android:pathData="M26,98h168q14,0 14,14v18q0,14 -14,14h-168q-14,0 -14,-14v-18q0,-14 14,-14z" />
+        android:fillColor="#FDF7FF"
+        android:pathData="M16,98h188q4,0 4,4v28q0,16 -16,16h-164q-16,0 -16,-16v-28q0,-4 4,-4z" />
     <path
-        android:fillColor="#DAD2E8"
+        android:fillColor="#E8DEFF"
         android:pathData="M34,105h0q16,0 16,16v0q0,16 -16,16h-0q-16,0 -16,-16v-0q0,-16 16,-16z" />
     <group
         android:scaleX="1"
