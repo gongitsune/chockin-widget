@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.2](https://github.com/gongitsune/chockin-widget/compare/v1.0.1...v1.0.2) (2026-11-20)
+
+
+### Bug Fixes
+
+* **app:** prevent release crash during WorkManager initialization ([6263c97](https://github.com/gongitsune/chockin-widget/commit/6263c97a86beca6895f9e5a9d9e622a7c9a127d8))
+* **app:** prevent release crash during WorkManager initialization ([16f8875](https://github.com/gongitsune/chockin-widget/commit/16f8875f5127e7ec90d70a8b82cf7f2fa9deaa7c))
+
 ## [1.0.1](https://github.com/gongitsune/chockin-widget/compare/v1.0.0...v1.0.1) (2026-11-19)
 
 
