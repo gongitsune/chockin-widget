@@ -209,7 +209,7 @@ private fun MemberRow(member: Member, icon: Bitmap?, index: Int, count: Int) {
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        member.name.take(1),
+                        member.initial,
                         style = TextStyle(
                             color = colors.onPrimaryContainer,
                             fontSize = Typography.titleMedium.fontSize,
