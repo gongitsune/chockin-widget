@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.3.0](https://github.com/gongitsune/chockin-widget/compare/v1.2.0...v1.3.0) (2026-11-21)
+
+
+### Features
+
+* **app:** adopt Material 3 Expressive app bar, pull to refresh, and loading states ([3bf30f0](https://github.com/gongitsune/chockin-widget/commit/3bf30f04384df6d5a71e8c3cb0ffb2613ab4f529))
+
+
+### Bug Fixes
+
+* **app:** harden room loading and show emoji initials correctly ([9602589](https://github.com/gongitsune/chockin-widget/commit/9602589f050dc3866ef2d70fe0cb0aa6bd0940c1))
+* **app:** use dark launch theme and widget preview in dark mode ([67a534b](https://github.com/gongitsune/chockin-widget/commit/67a534b0ff0fcc05b97b7b92bfc2ebf743b2cfbd))
+
 ## [1.2.0](https://github.com/gongitsune/chockin-widget/compare/v1.1.0...v1.2.0) (2026-11-20)
 
 
