@@ -20,10 +20,25 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ContainedLoadingIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeFlexibleTopAppBar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.SegmentedListItem
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -95,11 +110,50 @@ internal fun RoomScreen(state: RoomState, refreshing: Boolean, refresh: () -> Un
     val room = state.room
     val members = room?.members.orEmpty()
     val context = LocalContext.current
-    Scaffold { insets ->
-        Box(
-            Modifier
-                .fillMaxSize()
-                .padding(insets), contentAlignment = Alignment.TopCenter
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val pullState = rememberPullToRefreshState()
+    var pulled by remember { mutableStateOf(false) }
+    val pullRefreshing = pulled && refreshing && room != null
+    val snackbar = remember { SnackbarHostState() }
+    val refreshFailed = stringResource(R.string.refresh_failed)
+    val refreshingDescription = stringResource(R.string.refreshing)
+    LaunchedEffect(refreshing) {
+        if (!refreshing) {
+            pulled = false
+            if (state.failed && room != null) snackbar.showSnackbar(refreshFailed)
+        }
+    }
+    Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        topBar = {
+            LargeFlexibleTopAppBar(
+                title = { Text(stringResource(R.string.brand_name)) },
+                scrollBehavior = scrollBehavior,
+                actions = {
+                    IconButton(onClick = refresh, enabled = !refreshing) {
+                        Icon(painterResource(R.drawable.ic_refresh), stringResource(R.string.refresh))
+                    }
+                }
+            )
+        },
+        snackbarHost = { SnackbarHost(snackbar) }
+    ) { insets ->
+        PullToRefreshBox(
+            isRefreshing = pullRefreshing,
+            onRefresh = { pulled = true; refresh() },
+            state = pullState,
+            modifier = Modifier.fillMaxSize().padding(insets),
+            contentAlignment = Alignment.TopCenter,
+            indicator = {
+                if (room != null) {
+                    PullToRefreshDefaults.LoadingIndicator(
+                        state = pullState,
+                        isRefreshing = pullRefreshing,
+                        modifier = Modifier.align(Alignment.TopCenter)
+                            .semantics { contentDescription = refreshingDescription }
+                    )
+                }
+            }
         ) {
             LazyColumn(
                 modifier = Modifier
@@ -108,17 +162,6 @@ internal fun RoomScreen(state: RoomState, refreshing: Boolean, refresh: () -> Un
                 contentPadding = PaddingValues(horizontal = 20.dp, vertical = 20.dp)
             ) {
                 item {
-                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            stringResource(R.string.brand_name),
-                            Modifier.weight(1f),
-                            style = type.titleLargeEmphasized
-                        )
-                        FilledTonalButton(onClick = refresh, enabled = !refreshing) {
-                            Text(stringResource(if (refreshing) R.string.refreshing else R.string.refresh))
-                        }
-                    }
-                    Spacer(Modifier.height(24.dp))
                     Surface(shape = MaterialTheme.shapes.extraLarge, color = colors.primaryContainer) {
                         Row(
                             Modifier
@@ -130,13 +173,13 @@ internal fun RoomScreen(state: RoomState, refreshing: Boolean, refresh: () -> Un
                                 Text(stringResource(R.string.room_title), style = type.titleMedium)
                                 Row(verticalAlignment = Alignment.Bottom) {
                                     Text(
-                                        room?.members?.size?.toString() ?: "—",
+                                        if (room == null) "—" else members.size.toString(),
                                         style = type.displayLargeEmphasized
                                     )
                                     Text(
                                         pluralStringResource(
                                             R.plurals.people_unit,
-                                            room?.members?.size ?: 0
+                                            members.size
                                         ),
                                         Modifier.padding(bottom = 8.dp, start = 4.dp),
                                         style = type.titleLarge
@@ -150,9 +193,7 @@ internal fun RoomScreen(state: RoomState, refreshing: Boolean, refresh: () -> Un
                             Image(
                                 painterResource(R.drawable.club_room),
                                 null,
-                                Modifier
-                                    .widthIn(max = 112.dp)
-                                    .size(96.dp)
+                                Modifier.size(96.dp)
                             )
                         }
                     }
@@ -162,22 +203,45 @@ internal fun RoomScreen(state: RoomState, refreshing: Boolean, refresh: () -> Un
                         style = type.titleLargeEmphasized
                     )
                     Spacer(Modifier.height(12.dp))
-                    if (state.failed) Text(
-                        stringResource(if (room == null) R.string.load_failed else R.string.refresh_failed),
-                        Modifier.padding(bottom = 12.dp),
-                        color = colors.error,
-                        style = type.bodyMedium
-                    )
-                    if (room?.members?.isEmpty() == true || (room == null && !state.failed)) {
-                        Surface(
+                    when {
+                        room == null && state.failed && !refreshing -> Surface(
+                            shape = MaterialTheme.shapes.large,
+                            color = colors.errorContainer,
+                            contentColor = colors.onErrorContainer
+                        ) {
+                            Column(Modifier.fillMaxWidth().padding(24.dp)) {
+                                Text(stringResource(R.string.load_failed), style = type.bodyLarge)
+                                Spacer(Modifier.height(12.dp))
+                                Button(
+                                    onClick = refresh,
+                                    enabled = !refreshing,
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = colors.error,
+                                        contentColor = colors.onError
+                                    ),
+                                    shapes = ButtonDefaults.shapes()
+                                ) {
+                                    Text(stringResource(R.string.refresh))
+                                }
+                            }
+                        }
+                        room == null -> {
+                            val loading = stringResource(R.string.loading)
+                            Box(
+                                Modifier.fillMaxWidth().padding(24.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                ContainedLoadingIndicator(Modifier.semantics { contentDescription = loading })
+                            }
+                        }
+                        members.isEmpty() -> Surface(
                             shape = MaterialTheme.shapes.large,
                             color = colors.surfaceContainer
                         ) {
                             Text(
-                                stringResource(if (room == null) R.string.loading else R.string.room_empty),
-                                Modifier
-                                    .fillMaxWidth()
-                                    .padding(24.dp), style = type.bodyLarge
+                                stringResource(R.string.room_empty),
+                                Modifier.fillMaxWidth().padding(24.dp),
+                                style = type.bodyLarge
                             )
                         }
                     }
@@ -193,7 +257,7 @@ internal fun RoomScreen(state: RoomState, refreshing: Boolean, refresh: () -> Un
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    member.name.take(1),
+                                    member.initial,
                                     color = colors.onPrimaryContainer,
                                     style = type.titleMedium
                                 )
