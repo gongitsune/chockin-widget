@@ -6,7 +6,9 @@ import android.content.Intent
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.updateAll
 import androidx.work.CoroutineWorker
+import androidx.work.Constraints
 import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
@@ -27,7 +29,9 @@ class AppWidgetReceiver : GlanceAppWidgetReceiver() {
     ) {
         super.onUpdate(context, appWidgetManager, appWidgetIds)
         WorkManager.getInstance(context).enqueueUniqueWork(
-            "room-update", ExistingWorkPolicy.KEEP, OneTimeWorkRequestBuilder<RoomWorker>().build()
+            "room-update", ExistingWorkPolicy.KEEP, OneTimeWorkRequestBuilder<RoomWorker>()
+                .setConstraints(Constraints(requiredNetworkType = NetworkType.CONNECTED))
+                .build()
         )
     }
 }

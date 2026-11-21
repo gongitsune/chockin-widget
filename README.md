@@ -22,4 +22,4 @@ You can also build the app yourself. Open the `app/` folder in Android Studio, s
 2. Open **Widgets** and find **Chockin Widget**.
 3. Drag **Clubroom occupancy** onto your home screen.
 
-The widget checks for updates about every 30 minutes. To check sooner, tap the widget and then tap **Refresh** in the app.
+The widget checks for updates about every 30 minutes. To check sooner, tap the widget to open the app, then pull down on the list or tap the refresh button.

@@ -3,6 +3,7 @@ package com.k0ara.chockinwidget
 import android.content.Context
 import android.content.SharedPreferences
 import android.text.format.DateFormat
+import androidx.core.content.edit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
@@ -16,13 +17,22 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
 import java.net.URL
+import java.text.BreakIterator
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.util.Date
 import javax.net.ssl.HttpsURLConnection
 
-data class Member(val name: String, val avatar: String?, val status: String?)
+data class Member(val name: String, val avatar: String?, val status: String?) {
+    val initial: String
+        get() {
+            if (name.isEmpty()) return ""
+            val iterator = BreakIterator.getCharacterInstance()
+            iterator.setText(name)
+            return name.substring(0, iterator.next())
+        }
+}
 data class Room(val members: List<Member>, val timestamp: Instant) {
     fun formattedTime(context: Context): String {
         val locale = context.resources.configuration.locales[0]
@@ -47,6 +57,7 @@ internal fun parseRoom(json: String): Room {
 }
 
 object RoomRepository {
+    private const val MAX_RESPONSE_BYTES = 1024 * 1024
     private val lock = Mutex()
     private fun prefs(context: Context) = context.getSharedPreferences("room", Context.MODE_PRIVATE)
 
@@ -66,30 +77,37 @@ object RoomRepository {
 
     suspend fun refresh(context: Context): Boolean = withContext(Dispatchers.IO) {
         lock.withLock {
-            val edit = prefs(context).edit()
-            val success = try {
+            val json = try {
                 val connection =
                     URL("https://chockin-proxy.k0ara.com/api/room").openConnection() as HttpsURLConnection
                 val json = try {
                     connection.connectTimeout = 10_000
                     connection.readTimeout = 10_000
                     connection.setRequestProperty("Accept", "application/json")
-                    connection.inputStream.bufferedReader().use { it.readText() }
+                    if (connection.responseCode != 200) throw IOException("Unexpected response status")
+                    if (connection.contentLengthLong > MAX_RESPONSE_BYTES) throw IOException("Response too large")
+                    connection.inputStream.use {
+                        val bytes = it.readNBytes(MAX_RESPONSE_BYTES + 1)
+                        if (bytes.size > MAX_RESPONSE_BYTES) throw IOException("Response too large")
+                        bytes.toString(Charsets.UTF_8)
+                    }
                 } finally {
                     connection.disconnect()
                 }
                 parseRoom(json)
-                edit.putString("json", json)
-                true
+                json
             } catch (_: IOException) {
-                false
+                null
             } catch (_: JSONException) {
-                false
+                null
             } catch (_: java.time.format.DateTimeParseException) {
-                false
+                null
             }
-            edit.putBoolean("failed", !success).apply()
-            success
+            prefs(context).edit {
+                if (json != null) putString("json", json)
+                putBoolean("failed", json == null)
+            }
+            json != null
         }
     }
 }
